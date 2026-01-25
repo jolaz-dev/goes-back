@@ -1,18 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
+
+	"github.com/jolaz-dev/goes-back/src/goesback"
 )
 
-func marco(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Polo!")
-}
-
 func main() {
-	http.HandleFunc("/", marco)
+	http.HandleFunc("/", goesback.GoesBack)
 
 	slog.Info("Running on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
