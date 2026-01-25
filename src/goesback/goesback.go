@@ -6,13 +6,15 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/jolaz-dev/goes-back/config"
+	"github.com/jolaz-dev/goes-back/internal"
 )
 
-func GoesBack(w http.ResponseWriter, r *http.Request) {
-	clientRequest := Request{
+func GoesBack(r *http.Request, config *config.Config) (*EchoResponse, error) {
+	clientRequest := &Request{
 		BodySize: r.ContentLength,
 		Method:   r.Method,
 		Headers:  r.Header,
@@ -32,8 +34,7 @@ func GoesBack(w http.ResponseWriter, r *http.Request) {
 	u, err := url.ParseRequestURI(scheme + "://" + r.Host + r.RequestURI)
 	if err != nil {
 		slog.Error("Error parsing URL:", "error", err)
-		http.Error(w, "Unprocessable Entity", http.StatusUnprocessableEntity)
-		return
+		return nil, internal.ErrUnprocessableEntity
 	}
 
 	clientRequest.Scheme = u.Scheme
@@ -58,7 +59,7 @@ func GoesBack(w http.ResponseWriter, r *http.Request) {
 
 	client := getClientData(r)
 
-	server := getServerData()
+	server := getServerData(config)
 
 	resp := EchoResponse{
 		Request: clientRequest,
@@ -66,16 +67,7 @@ func GoesBack(w http.ResponseWriter, r *http.Request) {
 		Server:  server,
 	}
 
-	output, err := json.Marshal(resp)
-	if err != nil {
-		slog.Error("Error marshaling JSON:", "error", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(output)
+	return &resp, nil
 }
 
 func tryAndParseJSONBody(r *http.Request, body []byte) any {
@@ -93,7 +85,7 @@ func tryAndParseJSONBody(r *http.Request, body []byte) any {
 	return jsonBody
 }
 
-func getClientData(r *http.Request) Client {
+func getClientData(r *http.Request) *Client {
 	host, portStr, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		slog.Error("Error splitting host and port:", "error", err)
@@ -104,29 +96,17 @@ func getClientData(r *http.Request) Client {
 		slog.Error("Error converting port:", "error", err)
 	}
 
-	return Client{
+	return &Client{
 		IP:        host,
 		Port:      port,
 		UserAgent: r.UserAgent(),
 	}
 }
 
-func getServerData() Server {
-	version, err := os.ReadFile("version.txt")
-	if err != nil {
-		slog.Error("Error reading version file:", "error", err)
-		version = []byte("unknown")
-	}
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		slog.Error("Error getting hostname:", "error", err)
-		hostname = "unknown"
-	}
-
-	return Server{
-		Name:    "goes-back",
-		Version: string(version),
-		Host:    hostname,
+func getServerData(config *config.Config) *Server {
+	return &Server{
+		Name:    config.AppName,
+		Version: config.Version,
+		Host:    config.Hostname,
 	}
 }

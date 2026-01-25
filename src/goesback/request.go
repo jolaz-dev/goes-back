@@ -27,7 +27,7 @@ type Server struct {
 }
 
 type EchoResponse struct {
-	Request Request
-	Client  Client
-	Server  Server
+	Request *Request
+	Client  *Client
+	Server  *Server
 }
