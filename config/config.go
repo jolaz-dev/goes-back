@@ -16,7 +16,7 @@ type Config struct {
 func New() *Config {
 	config := Config{
 		AppName: "GoesBack",
-		Version: "0.1.0", // x-release-please-version
+		Version: "0.2.0", // x-release-please-version
 	}
 
 	hostname, err := os.Hostname()
