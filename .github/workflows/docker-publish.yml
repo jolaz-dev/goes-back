@@ -6,6 +6,16 @@ on:
       - main
     tags:
       - 'v*.*.*'
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/docker-publish.yml'
+      - '*/*.go'
+      - 'main.go'
+      - 'go.mod'
+      - 'go.sum'
+    paths-ignore:
+      - '*/*_test.go'
+      - '*/mocks/**'
 
 jobs:
   build-and-push:

@@ -11,6 +11,7 @@ import (
 	"github.com/jolaz-dev/goes-back/config"
 	"github.com/jolaz-dev/goes-back/goesback"
 	"github.com/jolaz-dev/goes-back/internal"
+	"github.com/jolaz-dev/goes-back/utils/compression"
 )
 
 const (
@@ -45,14 +46,12 @@ func GoesBack(config *config.Config) http.HandlerFunc {
 		bodyModifier := r.Header.Get(headerBodyModifier)
 		if bodyModifier != "" {
 			w.Header().Add(headerGoesBackResponse, string(output))
-			w.WriteHeader(status)
-			w.Write([]byte(bodyModifier))
+			compression.Compress(w, r, []byte(bodyModifier), status)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(status)
-		w.Write(output)
+		compression.Compress(w, r, output, status)
 	}
 }
 

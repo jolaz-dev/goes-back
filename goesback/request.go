@@ -1,17 +1,23 @@
 package goesback
 
+type RequestBody struct {
+	SizeRaw          int64
+	SizeDecompressed int64
+	Raw              string
+	Decompressed     string
+	JSON             any
+}
+
 type Request struct {
-	BodySize int64
-	Port     int
-	Method   string
-	URL      string
-	Scheme   string
-	Host     string
-	Path     string
-	RawBody  string
-	JSONBody any
-	Query    map[string][]string
-	Headers  map[string][]string
+	Port    int
+	Method  string
+	URL     string
+	Scheme  string
+	Host    string
+	Path    string
+	Body    *RequestBody
+	Query   map[string][]string
+	Headers map[string][]string
 }
 
 type Client struct {
