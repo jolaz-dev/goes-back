@@ -7,24 +7,48 @@
 - Echoes request data back to the client in JSON format
 - Returns method, path, query, headers, body, and client info
 - Allows you to customize the response status, body and headers on a per-request basis
+- Supports request/response gzip (de)compression
 - Lightweight and minimal by design
 - Easy to run locally or in a container
+
+## ❓ Why use it instead of Echo-Server?
+
+First things first: I didn't write `goes-back` to "compete" with `Echo-Server`: I was inspired by it and just wanted to make a coding exercise by writing the same thing in Go. At the end of the day, both are open source projects and you can use one or even both of them the best way it suits you.
+
+
+With that said, here goes some info in case you need to choose. For one side `goes-back` is currently not in feature-parity with `Echo-Server`: we don't support (yet) request delays, for example. Also, `Echo-Server` allows you to enable/disabling response customization using env vars, a feature that I particularly don't find that useful, but some folks out there may be used to have.
+
+For other side, there are some potential good reasons for you to choose `goes-back`:
+- Maybe you root more for Go than for JS 😅
+- You may find our header customization support a little easier to understand than `Echo-Server`'s
+- We support request/response gzip (de)compression
+  - Echo-Server logs an "incorrect header check" error if I try to use gzip. Other compression formats prompt a `415 Unsupported Media Type` response
+- Unfortunately, `Echo-Server` doesn't see the bright light of new code for a while now (as of jan/2026)
+  - This is bad not only for the tracking of issues like the compression one mentioned above, but also for the security vulnerabilities that naturally pile up over time, which can prevent it from being used on environments with strict security rules
+
+Again, this is not by any means an attack on `Ealenn`'s work: `Echo-Server` helped me a lot of times to test API gateway's configuration against a "real" upstream. I probably would try and open a PR for the things I need if I wasn't unsure about the status of the project (something that the author surely has their own personal reasons to not acting about). It's the mix of doing a real life side project and the specific need for things like (de)compression that motivated me to create `goes-back`.
+
+If any of this reasons makes sense for you to use `goes-back`, welcome aboard!
 
 ## 📦 Example JSON Response
 
 ```json
 {
   "Request": {
-    "BodySize": 20,
     "Port": 8080,
     "Method": "POST",
     "URL": "/hahaha?uno=due\u0026uno=tre",
     "Scheme": "http",
     "Host": "localhost:8080",
     "Path": "/hahaha",
-    "RawBody": "{\n  \"key\": \"value\"\n}",
-    "JSONBody": {
-      "key": "value"
+    "Body": {
+      "SizeRaw": 64,
+      "SizeDecompressed": 20,
+      "Raw": "H4sIAAAAAAAAA6rmUlBQyk6tVLJSUCpLzClNVeKqBQAAAP//AwA+ENryFAAAAA==",
+      "Decompressed": "{\n  \"key\": \"value\"\n}",
+      "JSON": {
+        "key": "value"
+      }
     },
     "Query": {
       "uno": [
@@ -40,10 +64,13 @@
         "close"
       ],
       "Content-Length": [
-        "20"
+        "64"
       ],
       "Content-Type": [
         "application/json"
+      ],
+      "Content-Encoding": [
+        "gzip"
       ],
       "User-Agent": [
         "vscode-restclient"
@@ -56,8 +83,8 @@
     "UserAgent": "vscode-restclient"
   },
   "Server": {
-    "Name": "goes-back",
-    "Version": "0.0.1\n",
+    "Name": "GoesBack",
+    "Version": "0.1.0",
     "Host": "my-host"
   }
 }

@@ -11,14 +11,14 @@ import (
 
 	"github.com/jolaz-dev/goes-back/config"
 	"github.com/jolaz-dev/goes-back/internal"
+	"github.com/jolaz-dev/goes-back/utils/compression"
 )
 
 func GoesBack(r *http.Request, config *config.Config) (*EchoResponse, error) {
 	clientRequest := &Request{
-		BodySize: r.ContentLength,
-		Method:   r.Method,
-		Headers:  r.Header,
-		URL:      r.RequestURI,
+		Method:  r.Method,
+		Headers: r.Header,
+		URL:     r.RequestURI,
 	}
 
 	scheme := r.URL.Scheme
@@ -48,14 +48,7 @@ func GoesBack(r *http.Request, config *config.Config) (*EchoResponse, error) {
 	}
 	clientRequest.Port = port
 
-	rawBody := make([]byte, r.ContentLength)
-	_, err = r.Body.Read(rawBody)
-	if err != nil && err.Error() != "EOF" {
-		slog.Error("Error reading body:", "error", err)
-	}
-	clientRequest.RawBody = string(rawBody)
-
-	clientRequest.JSONBody = tryAndParseJSONBody(r, rawBody)
+	clientRequest.Body = workOnBody(r)
 
 	client := getClientData(r)
 
@@ -68,6 +61,36 @@ func GoesBack(r *http.Request, config *config.Config) (*EchoResponse, error) {
 	}
 
 	return &resp, nil
+}
+
+func workOnBody(r *http.Request) *RequestBody {
+	rawBody := make([]byte, r.ContentLength)
+	_, err := r.Body.Read(rawBody)
+	if err != nil && err.Error() != "EOF" {
+		slog.Error("Error reading body", "error", err)
+	}
+
+	body := &RequestBody{
+		SizeRaw: int64(len(rawBody)),
+		Raw:     string(rawBody),
+	}
+
+	bodyToParse := rawBody
+
+	decompressedBody, err := compression.Deflate(r, body.Raw)
+
+	if err != nil {
+		slog.Error("Error decompressing body:", "error", err)
+		return body
+	} else if decompressedBody != nil {
+		body.SizeDecompressed = int64(len(decompressedBody))
+		body.Decompressed = string(decompressedBody)
+		bodyToParse = decompressedBody
+	}
+
+	body.JSON = tryAndParseJSONBody(r, bodyToParse)
+
+	return body
 }
 
 func tryAndParseJSONBody(r *http.Request, body []byte) any {
