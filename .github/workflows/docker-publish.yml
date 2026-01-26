@@ -13,9 +13,6 @@ on:
       - 'main.go'
       - 'go.mod'
       - 'go.sum'
-    paths-ignore:
-      - '*/*_test.go'
-      - '*/mocks/**'
 
 jobs:
   build-and-push:
