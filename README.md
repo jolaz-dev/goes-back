@@ -64,6 +64,14 @@
 ```
 
 ## 🧪 Getting Started
+
+If you just want to use the server, there's a [Docker image](https://hub.docker.com/r/jonathanlazaro1/goes-back) that you can use with:
+```bash
+docker run -p 8080:8080 jonathanlazaro1/goes-back
+```
+
+If you want to contribute or prefer to run it locally, follow the instructions below.
+
 ### Prerequisites
 
 - Go 1.24 or newer
