@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/jolaz-dev/goes-back/config"
+	"github.com/jolaz-dev/goes-back/goesback"
 	"github.com/jolaz-dev/goes-back/internal"
-	"github.com/jolaz-dev/goes-back/src/goesback"
 )
 
 const (
