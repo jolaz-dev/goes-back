@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/jolaz-dev/goes-back/compare/v0.2.0...v0.2.1) (2026-01-30)
+
+
+### Bug Fixes
+
+* fixes response query params encoding ([#11](https://github.com/jolaz-dev/goes-back/issues/11)) ([638a7e7](https://github.com/jolaz-dev/goes-back/commit/638a7e773ba1774fb324e35cf878c1f9521817fb))
+
 ## [0.2.0](https://github.com/jolaz-dev/goes-back/compare/v0.1.0...v0.2.0) (2026-01-26)
 
 
