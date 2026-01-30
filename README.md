@@ -93,7 +93,7 @@ Response:
   },
   "Server": {
     "Name": "GoesBack",
-    "Version": "0.1.0", // x-release-please-version
+    "Version": "0.2.1", // x-release-please-version
     "Host": "my-host"
   }
 }
