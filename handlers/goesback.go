@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -32,12 +33,17 @@ func GoesBack(config *config.Config) http.HandlerFunc {
 			return
 		}
 
-		output, err := json.Marshal(response)
-		if err != nil {
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		enc.SetEscapeHTML(false)
+
+		if err := enc.Encode(response); err != nil {
 			slog.Error("Error marshaling JSON:", "error", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
+		output := buf.Bytes()
 
 		checkForHeaderModifiers(w, r)
 
