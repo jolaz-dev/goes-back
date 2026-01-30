@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*.*.*'
     paths:
       - 'Dockerfile'
       - '.github/workflows/docker-publish.yml'
@@ -15,8 +13,42 @@ on:
       - 'go.sum'
 
 jobs:
+  check_commit:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.compare.outputs.should_skip }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag SHA and compare with current commit
+        id: compare
+        run: |
+          # Fetch all tags from remote
+          git fetch --tags origin
+
+          # Get the SHA of the latest tag
+          LATEST_TAG_SHA=$(git rev-list --tags --max-count=1)
+
+          # Get the SHA of the current HEAD commit that triggered the workflow
+          CURRENT_COMMIT_SHA=${{ github.sha }}
+
+          echo "Latest tag SHA: $LATEST_TAG_SHA"
+          echo "Current commit SHA: $CURRENT_COMMIT_SHA"
+
+          # Compare the SHAs
+          if [ "$LATEST_TAG_SHA" = "$CURRENT_COMMIT_SHA" ]; then
+            echo "::set-output name=should_skip::true"
+          else
+            echo "::set-output name=should_skip::false"
+          fi
+
   build-and-push:
     runs-on: ubuntu-latest
+    needs: check_commit
+    if: needs.check_commit.outputs.skip == 'false'
     steps:
       - name: Docker meta
         id: meta
@@ -25,9 +57,6 @@ jobs:
           images: |
             jonathanlazaro1/goes-back
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
             type=sha
 
       - name: Checkout repository

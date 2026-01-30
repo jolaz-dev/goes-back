@@ -8,7 +8,9 @@
       "draft": false,
       "prerelease": false,
       "extra-files": [
-        "config/config.go"
+        "config/config.go",
+        "version.txt",
+        "README.md"
       ]
     }
   },
